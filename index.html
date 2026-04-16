@@ -1,10 +1,137 @@
 <!DOCTYPE html>
-<html>
-<head><title>Home</title></head>
-<body>
-  <h1>Welcome</h1>
-  <p>Public page — anyone can see this.</p>
-  <a href="/login">Login / Register</a> |
-  <a href="/private.html">Members area</a>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Old Town Montgomery Self-Guided Tours</title>
+<script src="/tailwinds.css"></script>
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          brand: {
+            50:'#F5EFE0',100:'#EBE2CB',200:'#D6C8A6',300:'#B8A57B',400:'#8B6F47',
+            500:'#5B6E4C',600:'#3F5A3E',700:'#2E4A34',800:'#223A28',900:'#17291C',
+          },
+          sepia: { 50:'#FAF5E9',100:'#F0E6CC',600:'#8B6F47',700:'#6B4F2E' }
+        },
+        fontFamily: {
+          serif: ['Georgia','ui-serif','serif'],
+          display: ['"Playfair Display"','Georgia','serif'],
+        }
+      }
+    }
+  }
+</script>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&display=swap" rel="stylesheet">
+<style>
+  body { background-color: #17291C; }
+  .bg-pattern {
+    background-image:
+      radial-gradient(ellipse at 30% 0%, rgba(94,110,76,0.18) 0%, transparent 50%),
+      radial-gradient(ellipse at 80% 80%, rgba(139,111,71,0.12) 0%, transparent 50%);
+  }
+  @keyframes fadeUp { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:translateY(0); } }
+  .fade-up { animation: fadeUp 0.6s ease-out both; }
+  .fade-up-d1 { animation-delay: 0.1s; }
+  .fade-up-d2 { animation-delay: 0.25s; }
+  .fade-up-d3 { animation-delay: 0.4s; }
+</style>
+</head>
+<body class="bg-pattern min-h-screen flex flex-col text-brand-100">
+
+  <!-- Nav -->
+  <nav class="px-6 py-5 flex items-center justify-between max-w-5xl mx-auto w-full">
+    <div class="flex items-center gap-3">
+      <div class="w-9 h-9 rounded-full bg-brand-700 border-2 border-brand-300 flex items-center justify-center">
+        <svg class="w-4 h-4 text-brand-100" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2">
+          <path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+        </svg>
+      </div>
+      <div>
+        <div class="text-brand-100 text-sm font-serif font-semibold">Old Town Montgomery</div>
+        <div class="text-brand-400 text-xs tracking-wider uppercase">Self-Guided Tours</div>
+      </div>
+    </div>
+    <div id="nav-links" class="flex items-center gap-4 text-sm"></div>
+  </nav>
+
+  <!-- Hero -->
+  <main class="flex-1 flex items-center justify-center px-6 py-12">
+    <div class="max-w-2xl text-center">
+      <p class="text-xs uppercase tracking-[0.3em] text-brand-300 mb-4 fade-up">Landmarks Foundation &middot; Montgomery, Alabama</p>
+      <h1 class="font-display text-5xl md:text-6xl font-bold text-white leading-tight fade-up fade-up-d1">
+        Old Town Montgomery<br>
+        <span class="text-brand-300">Self-Guided Tours</span>
+      </h1>
+      <p class="mt-6 text-brand-200 text-lg leading-relaxed max-w-xl mx-auto fade-up fade-up-d2">
+        Explore over 50 years of preserved Alabama history. Visit restored homes, workshops, and landmarks at your own pace — guided by Bluetooth beacons and rich media content.
+      </p>
+      <div class="mt-10 flex flex-col sm:flex-row items-center justify-center gap-4 fade-up fade-up-d3">
+        <a href="/login"
+          class="px-8 py-3.5 bg-sepia-600 text-white font-semibold rounded-lg hover:bg-sepia-700 shadow-lg shadow-black/20 transition text-sm tracking-wide">
+          Login / Register
+        </a>
+        <a href="/private.html"
+          class="px-8 py-3.5 bg-brand-700 border border-brand-500 text-white font-semibold rounded-lg hover:bg-brand-600 shadow-lg shadow-black/20 transition text-sm tracking-wide">
+          Members Area
+        </a>
+      </div>
+    </div>
+  </main>
+
+  <!-- Info strip -->
+  <footer class="border-t border-brand-800 bg-brand-900/40">
+    <div class="max-w-5xl mx-auto px-6 py-8 grid grid-cols-1 md:grid-cols-3 gap-6 text-sm text-brand-300">
+      <div>
+        <h3 class="font-serif font-semibold text-brand-100 mb-1">Visit</h3>
+        <p>Wed – Sat, 10 AM – 4 PM<br>Last ticket sold 3 PM</p>
+      </div>
+      <div>
+        <h3 class="font-serif font-semibold text-brand-100 mb-1">Tickets</h3>
+        <p>$15 Adults &middot; Under 12 Free<br>Lucas Tavern, 310 N. Hull St.</p>
+      </div>
+      <div>
+        <h3 class="font-serif font-semibold text-brand-100 mb-1">Contact</h3>
+        <p>301 Columbus St., Montgomery, AL 36104<br>334.240.4500</p>
+      </div>
+    </div>
+  </footer>
+
+<script>
+  // Azure Static Web Apps authentication
+  // /.auth/me returns { clientPrincipal: { userId, userDetails, identityProvider, userRoles } } when signed in
+  // or { clientPrincipal: null } when anonymous.
+  async function getCurrentUser() {
+    try {
+      const res = await fetch('/.auth/me');
+      if (!res.ok) return null;
+      const payload = await res.json();
+      return payload.clientPrincipal || null;
+    } catch (e) {
+      return null;
+    }
+  }
+
+  (async () => {
+    const nav = document.getElementById('nav-links');
+    const user = await getCurrentUser();
+
+    if (user) {
+      // userDetails is typically the email or username from the identity provider
+      const displayName = user.userDetails || 'Member';
+      nav.innerHTML = `
+        <span class="text-brand-200">Hi, ${displayName}</span>
+        <a href="/private.html" class="text-brand-300 hover:text-white transition">Members</a>
+        <a href="/logout" class="text-brand-400 hover:text-white transition">Sign Out</a>
+      `;
+    } else {
+      nav.innerHTML = `
+        <a href="/login" class="text-brand-300 hover:text-white transition">Login</a>
+      `;
+    }
+  })();
+</script>
 </body>
 </html>
