@@ -2,7 +2,7 @@
   "routes": [
     { "route": "/login", "redirect": "/.auth/login/aad" },
     { "route": "/logout", "redirect": "/.auth/logout" },
-    { "route": "/tailwind.css", "allowedRoles": ["anonymous", "authenticated"] },
+    { "route": "/tailwinds.css", "allowedRoles": ["anonymous", "authenticated"] },
     { "route": "/private.html", "allowedRoles": ["member", "admin"] }
   ],
   "responseOverrides": {
