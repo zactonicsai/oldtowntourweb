@@ -4,9 +4,27 @@
 <meta charset="UTF-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Old Town Montgomery Self-Guided Tours</title>
-<script src="/tailwinds.css"></script>
+<script src="https://cdn.tailwindcss.com"></script>
 <title>Old Town Montgomery Self-Guided Tours</title>
-
+<script>
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          brand: {
+            50:'#F5EFE0',100:'#EBE2CB',200:'#D6C8A6',300:'#B8A57B',400:'#8B6F47',
+            500:'#5B6E4C',600:'#3F5A3E',700:'#2E4A34',800:'#223A28',900:'#17291C',
+          },
+          sepia: { 50:'#FAF5E9',100:'#F0E6CC',600:'#8B6F47',700:'#6B4F2E' }
+        },
+        fontFamily: {
+          serif: ['Georgia','ui-serif','serif'],
+          display: ['"Playfair Display"','Georgia','serif'],
+        }
+      }
+    }
+  }
+</script>
 <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
   body { background-color: #17291C; }
