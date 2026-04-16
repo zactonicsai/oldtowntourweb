@@ -925,9 +925,7 @@ init();
     fetch('/.auth/me').then(r => r.json()).then(d => {
       const u = d.clientPrincipal;
       document.getElementById('info').innerHTML =
-        'Name: ' + u.userDetails + '<br>' +
-        'User ID: ' + u.userId + '<br>' +
-        'Roles: ' + u.userRoles.join(', ');
+        'Name: ' + u.userDetails + '<br>' 
     });
   </script>
 
