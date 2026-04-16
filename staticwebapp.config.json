@@ -3,7 +3,7 @@
     { "route": "/login", "redirect": "/.auth/login/aad" },
     { "route": "/logout", "redirect": "/.auth/logout" },
     { "route": "/tailwinds.css", "allowedRoles": ["anonymous", "authenticated"] },
-    { "route": "/private.html", "allowedRoles": ["member", "admin"] }
+    { "route": "/private.html", "allowedRoles": [ "admin", "authenticated"] }
   ],
   "responseOverrides": {
     "401": { "statusCode": 302, "redirect": "/.auth/login/aad" },
