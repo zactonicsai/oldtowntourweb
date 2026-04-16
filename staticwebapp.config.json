@@ -1,0 +1,11 @@
+{
+  "routes": [
+    { "route": "/login", "redirect": "/.auth/login/aad" },
+    { "route": "/logout", "redirect": "/.auth/logout" },
+    { "route": "/private.html", "allowedRoles": ["member", "admin"] }
+  ],
+  "responseOverrides": {
+    "401": { "statusCode": 302, "redirect": "/.auth/login/aad" },
+    "403": { "rewrite": "/forbidden.html" }
+  }
+}
