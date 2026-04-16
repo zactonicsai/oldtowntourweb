@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 <title>Old Town Montgomery Self-Guided Tours</title>
 <script src="/tailwinds.css"></script>
+<title>Old Town Montgomery Self-Guided Tours</title>
 <script>
   tailwind.config = {
     theme: {
@@ -73,8 +74,8 @@
           class="px-8 py-3.5 bg-sepia-600 text-white font-semibold rounded-lg hover:bg-sepia-700 shadow-lg shadow-black/20 transition text-sm tracking-wide">
           Login / Register
         </a>
-        <a href="/private.html"
-          class="px-8 py-3.5 bg-brand-700 border border-brand-500 text-white font-semibold rounded-lg hover:bg-brand-600 shadow-lg shadow-black/20 transition text-sm tracking-wide">
+        <a id="members-btn" href="/private.html"
+          class="hidden px-8 py-3.5 bg-brand-700 border border-brand-500 text-white font-semibold rounded-lg hover:bg-brand-600 shadow-lg shadow-black/20 transition text-sm tracking-wide">
           Members Area
         </a>
       </div>
@@ -116,9 +117,13 @@
 
   (async () => {
     const nav = document.getElementById('nav-links');
+    const membersBtn = document.getElementById('members-btn');
     const user = await getCurrentUser();
 
     if (user) {
+      // Reveal the Members Area button in the hero
+      membersBtn.classList.remove('hidden');
+
       // userDetails is typically the email or username from the identity provider
       const displayName = user.userDetails || 'Member';
       nav.innerHTML = `
