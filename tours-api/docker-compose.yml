@@ -1,0 +1,87 @@
+# Two-container stack:
+#
+#   web  — nginx:alpine serving the static admin console (web/) and
+#          reverse-proxying /api/* and /healthz to the Go container.
+#          This is the only service published to the host.
+#   api  — the Go API. Listens on 8080 inside the compose network;
+#          NOT published to the host, so every request has to come
+#          through nginx.
+#
+# Because everything now lives behind a single origin the browser
+# sees, CORS is a non-issue and the admin console can be served
+# over the same host:port as the API.
+#
+# Usage:
+#   cp .env.example .env     # then edit API_SHARED_KEY
+#   docker compose up -d --build
+#   open http://localhost:8080/private.html
+#
+# Stop / reset:
+#   docker compose down                   # stop, keep data
+#   docker compose down -v                # stop and wipe the data volume
+
+services:
+  api:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: tours-api:local
+    restart: unless-stopped
+    environment:
+      # Required. Must match the key the admin console is prompted for.
+      API_SHARED_KEY: ${API_SHARED_KEY:?API_SHARED_KEY is required}
+      # Internal listen port (not exposed to the host).
+      PORT: "8080"
+      # Persisted on the named volume below.
+      DATA_DIR: "/data"
+      # Same-origin through nginx, so we don't need permissive CORS.
+      # Override in .env if you front this with a different domain.
+      ALLOWED_ORIGINS: ${ALLOWED_ORIGINS:-http://localhost:8080}
+      MAX_UPLOAD_MB: ${MAX_UPLOAD_MB:-100}
+      # nginx serves the static UI now — disable the Go server's
+      # built-in static handler so it stays a pure API.
+      WEB_ROOT: ""
+    volumes:
+      - api-data:/data
+    # No `ports:` — the API is only reachable via the web container.
+    networks:
+      - tours-net
+    healthcheck:
+      # Distroless has no wget/curl; use the Go binary itself as a
+      # trivial TCP probe by hitting /healthz through the stdlib.
+      # We rely on docker's built-in HEALTHCHECK? No — distroless
+      # has nothing to run. Use a start period + rely on the web
+      # container's depends_on + restart policy instead.
+      # Leaving this as a reminder: if you swap to alpine-based image,
+      # add: test: ["CMD", "wget", "-qO-", "http://localhost:8080/healthz"]
+      disable: true
+
+  web:
+    image: nginx:alpine3.23
+    restart: unless-stopped
+    depends_on:
+      - api
+    ports:
+      # Change the left side to remap (e.g. "80:80" for production).
+      - "${WEB_PORT:-8080}:80"
+    volumes:
+      # Static admin console — read-only bind mount, served directly.
+      - ./web:/usr/share/nginx/html:ro
+      # Reverse-proxy config.
+      - ./deploy/nginx.conf:/etc/nginx/conf.d/default.conf:ro
+    networks:
+      - tours-net
+    healthcheck:
+      test: ["CMD", "wget", "-qO-", "http://localhost/healthz"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+      start_period: 10s
+
+networks:
+  tours-net:
+    driver: bridge
+
+volumes:
+  # Survives `docker compose down`; only wiped by `down -v`.
+  api-data:

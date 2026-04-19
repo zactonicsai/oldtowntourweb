@@ -1,0 +1,26 @@
+# Build output
+/bin/
+/dist/
+/out/
+tours-api
+*.exe
+
+# Runtime data (never commit uploads / site data)
+/data/
+data/
+
+# Go
+*.test
+*.out
+coverage.*
+
+# IDE
+.vscode/
+.idea/
+*.swp
+.DS_Store
+
+# Env files (may contain API_SHARED_KEY)
+.env
+.env.*
+!.env.example

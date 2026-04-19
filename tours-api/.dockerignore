@@ -1,0 +1,22 @@
+.git
+.gitignore
+.dockerignore
+Dockerfile
+docker-compose.yml
+docker-compose.*.yml
+.env
+.env.*
+!.env.example
+README.md
+deploy/
+
+# Never ship runtime data or local artefacts into the image.
+data/
+/data
+*.test
+*.out
+coverage.*
+
+.vscode/
+.idea/
+.DS_Store

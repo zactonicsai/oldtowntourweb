@@ -1,0 +1,95 @@
+{
+  "exportedAt": "2026-04-19T14:23:41.141Z",
+  "app": "Old Town Montgomery Self-Guided Tours",
+  "version": 2,
+  "sites": [
+    {
+      "id": "88db2c995263244407ced7f42c24638d",
+      "title": "Lucas Tavern",
+      "beaconId": "BEACON-001",
+      "text": "Lucas Tavern is the oldest building in Montgomery and your starting point for the tour. Originally built around 1818 along the Old Federal Road, it once hosted the Marquis de Lafayette in 1825. Pick up your ticket here and begin your journey through 19th-century Alabama.",
+      "audioUrl": "https://www.w3.org/2010/05/sound/sound_90.mp3",
+      "videoUrl": "",
+      "createdAt": "2026-04-19T14:19:45.622989756Z",
+      "updatedAt": "2026-04-19T14:19:45.622989756Z"
+    },
+    {
+      "id": "148bd66f92768eb0a5942a22ea251fcb",
+      "title": "Ordeman-Mitchell-Shaw House",
+      "beaconId": "BEACON-002",
+      "text": "This elegant 1850s townhouse complex showcases the urban life of a prosperous Montgomery family before the Civil War. Tour the main house, detached kitchen, slave quarters, carriage house, and period gardens to understand the full household economy of the antebellum South.",
+      "audioUrl": "https://www.w3.org/2010/05/sound/sound_90.mp3",
+      "videoUrl": "https://www.w3schools.com/html/mov_bbb.mp4",
+      "createdAt": "2026-04-19T14:19:45.622989756Z",
+      "updatedAt": "2026-04-19T14:19:45.622989756Z"
+    },
+    {
+      "id": "7edca8ff52d4c6f882960f56a90f4dd4",
+      "title": "The Working Block",
+      "beaconId": "BEACON-003",
+      "text": "Step into Alabama’s craft traditions. The Working Block features a blacksmith shop, carpenter shop, cotton gin, gristmill, and print shop — each preserved to show the trades that built frontier Alabama. Watch demonstrations of ironwork and wood joinery on select days.",
+      "audioUrl": "",
+      "videoUrl": "",
+      "createdAt": "2026-04-19T14:19:45.622989756Z",
+      "updatedAt": "2026-04-19T14:19:45.622989756Z"
+    },
+    {
+      "id": "2aae261effd98012546cab0beda93e0b",
+      "title": "The Living Block",
+      "beaconId": "BEACON-004",
+      "text": "The Living Block centers on rural domestic life: a dogtrot cabin, shotgun house, one-room schoolhouse, country church, and doctor’s office. Together these buildings tell the story of everyday Alabamians in the late 1800s and early 1900s.",
+      "audioUrl": "",
+      "videoUrl": "https://www.w3schools.com/html/mov_bbb.mp4",
+      "createdAt": "2026-04-19T14:19:45.622989756Z",
+      "updatedAt": "2026-04-19T14:19:45.622989756Z"
+    },
+    {
+      "id": "436041cfddb4405ec4feb73ed7ec7da2",
+      "title": "Drugstore Museum",
+      "beaconId": "BEACON-005",
+      "text": "Inside this restored 1890s drugstore, you’ll find original apothecary cabinets, patent medicines, and the marble soda fountain that served generations of Montgomery customers. A time capsule of medical practice before modern pharmacy.",
+      "audioUrl": "https://www.w3.org/2010/05/sound/sound_90.mp3",
+      "videoUrl": "",
+      "createdAt": "2026-04-19T14:19:45.622989756Z",
+      "updatedAt": "2026-04-19T14:19:45.622989756Z"
+    },
+    {
+      "id": "3a0018d94f822cc945c9277011504372",
+      "title": "Grange Hall",
+      "beaconId": "BEACON-006",
+      "text": "Built in 1890, this meeting hall served the Patrons of Husbandry — a fraternal order that organized rural Alabama farmers. It hosted dances, political rallies, and community gatherings, making it the social heart of the countryside.",
+      "audioUrl": "",
+      "videoUrl": "",
+      "createdAt": "2026-04-19T14:19:45.622989756Z",
+      "updatedAt": "2026-04-19T14:19:45.622989756Z"
+    },
+    {
+      "id": "b18683d568ad3be31f39258918ba89fc",
+      "title": "eedddsd",
+      "beaconId": "sddsd",
+      "text": "dsdds",
+      "audioUrl": "/api/media/ef192167de30cf9bd43b24010c11c122",
+      "videoUrl": "",
+      "createdAt": "2026-04-19T14:22:22.537092198Z",
+      "updatedAt": "2026-04-19T14:22:22.537092198Z"
+    }
+  ],
+  "media": [
+    {
+      "id": "6e6d3ce1831a4742d10614d48f91eeb6",
+      "url": "/api/media/6e6d3ce1831a4742d10614d48f91eeb6",
+      "filename": "co-lab-tribute-rap.mp3",
+      "contentType": "audio/mpeg",
+      "size": 3653520,
+      "uploadedAt": "2026-04-19T14:20:19.602965995Z"
+    },
+    {
+      "id": "ef192167de30cf9bd43b24010c11c122",
+      "url": "/api/media/ef192167de30cf9bd43b24010c11c122",
+      "filename": "halfh.mp3",
+      "contentType": "audio/mpeg",
+      "size": 3587770,
+      "uploadedAt": "2026-04-19T14:22:19.196706898Z"
+    }
+  ]
+}

@@ -1,0 +1,926 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Old Town Montgomery Self-Guided Tours</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  // Brand palette inspired by Landmarks Foundation / Old Alabama Town:
+  //   hunter green primary, warm cream background, antique sepia accents.
+  tailwind.config = {
+    theme: {
+      extend: {
+        colors: {
+          brand: {
+            50:  '#F5EFE0',
+            100: '#EBE2CB',
+            200: '#D6C8A6',
+            300: '#B8A57B',
+            400: '#8B6F47',
+            500: '#5B6E4C',
+            600: '#3F5A3E',
+            700: '#2E4A34',
+            800: '#223A28',
+            900: '#17291C',
+          },
+          sepia: {
+            50:  '#FAF5E9',
+            100: '#F0E6CC',
+            600: '#8B6F47',
+            700: '#6B4F2E',
+          }
+        },
+        fontFamily: {
+          serif: ['Georgia', 'ui-serif', 'serif'],
+        }
+      }
+    }
+  }
+</script>
+<style>
+  .sr-file { position: absolute; width: 1px; height: 1px; padding: 0; margin: -1px; overflow: hidden; clip: rect(0,0,0,0); border: 0; }
+  body { background-color: #FAF5E9; }
+  .row-clickable { cursor: pointer; }
+</style>
+</head>
+<body class="min-h-screen text-brand-900">
+
+  <!-- ============================= HEADER ============================= -->
+  <header class="bg-brand-700 text-brand-50 shadow-md">
+    <div class="max-w-7xl mx-auto px-6 py-6 flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+      <div>
+        <div class="text-xs uppercase tracking-[0.25em] text-brand-200 mb-1">Landmarks Foundation &middot; Montgomery, Alabama</div>
+        <h1 class="text-3xl font-serif font-semibold text-white">Old Town Montgomery Self-Guided Tours</h1>
+        <p class="text-sm text-brand-100 mt-1">Manage tour sites, Bluetooth beacons, and associated media.</p>
+      </div>
+      <div class="flex flex-wrap gap-2">
+        <button id="btn-add" class="px-4 py-2 bg-sepia-600 text-white text-sm font-medium rounded-md hover:bg-sepia-700 transition shadow-sm">
+          + Add Site
+        </button>
+        <button id="btn-sample" class="px-4 py-2 bg-brand-50 border border-brand-200 text-brand-800 text-sm font-medium rounded-md hover:bg-white transition">
+          Load Sample Data
+        </button>
+        <button id="btn-import" class="px-4 py-2 bg-brand-50 border border-brand-200 text-brand-800 text-sm font-medium rounded-md hover:bg-white transition">
+          Import JSON
+        </button>
+        <input type="file" id="file-import" accept="application/json" class="sr-file" />
+        <button id="btn-export" class="px-4 py-2 bg-brand-50 border border-brand-200 text-brand-800 text-sm font-medium rounded-md hover:bg-white transition">
+          Export JSON
+        </button>
+        <button id="btn-clear" class="px-4 py-2 bg-brand-800 border border-brand-900 text-brand-100 text-sm font-medium rounded-md hover:bg-brand-900 transition">
+          Clear All
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ============================= MAIN ============================= -->
+  <main class="max-w-7xl mx-auto px-6 py-8">
+    <div class="bg-white border border-brand-200 rounded-lg shadow-sm overflow-hidden">
+      <div class="px-6 py-4 border-b border-brand-200 flex items-center justify-between bg-brand-50">
+        <h2 class="text-lg font-serif font-semibold text-brand-800">Tour Sites</h2>
+        <div class="text-sm text-brand-700 flex items-center gap-4">
+          <span id="site-count">0 sites</span>
+          <span id="storage-info" class="text-xs text-brand-500"></span>
+        </div>
+      </div>
+      <div class="overflow-x-auto">
+        <table class="w-full text-sm">
+          <thead class="bg-brand-50 text-brand-700 border-b border-brand-200">
+            <tr>
+              <th class="text-left font-semibold uppercase tracking-wider text-xs px-6 py-3">Title</th>
+              <th class="text-left font-semibold uppercase tracking-wider text-xs px-6 py-3">Beacon ID</th>
+              <th class="text-center font-semibold uppercase tracking-wider text-xs px-4 py-3">Text</th>
+              <th class="text-center font-semibold uppercase tracking-wider text-xs px-4 py-3">Audio</th>
+              <th class="text-center font-semibold uppercase tracking-wider text-xs px-4 py-3">Video</th>
+              <th class="text-right font-semibold uppercase tracking-wider text-xs px-6 py-3">Actions</th>
+            </tr>
+          </thead>
+          <tbody id="sites-tbody" class="divide-y divide-brand-100"></tbody>
+        </table>
+        <div id="empty-state" class="hidden px-6 py-16 text-center text-brand-600">
+          <p class="text-base">No sites yet.</p>
+          <p class="text-sm mt-1">Click <span class="font-medium">Add Site</span> or <span class="font-medium">Load Sample Data</span> to get started.</p>
+        </div>
+      </div>
+    </div>
+    <p class="mt-3 text-xs text-brand-600 italic">Tip: click any row to view and edit the site, upload audio/video, or paste external media URLs.</p>
+
+    <footer class="mt-8 text-center text-xs text-brand-600">
+      Landmarks Foundation &middot; 301 Columbus St., Montgomery, AL 36104 &middot; 334.240.4500
+    </footer>
+  </main>
+
+  <!-- ============================= DETAIL MODAL (view + edit in one) ============================= -->
+  <div id="detail-modal" class="hidden fixed inset-0 bg-brand-900/60 z-40 flex items-center justify-center p-4">
+    <div class="bg-white rounded-lg shadow-xl w-full max-w-3xl max-h-[92vh] overflow-y-auto">
+      <div class="px-6 py-4 border-b border-brand-200 flex items-center justify-between bg-brand-50 sticky top-0 z-10">
+        <h3 id="detail-heading" class="text-lg font-serif font-semibold text-brand-800">Site Details</h3>
+        <button data-close-modal="detail-modal" class="text-brand-500 hover:text-brand-800 text-2xl leading-none">&times;</button>
+      </div>
+
+      <form id="detail-form" class="px-6 py-5 space-y-5">
+        <input type="hidden" id="field-id" />
+
+        <!-- Title + Beacon -->
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+          <div>
+            <label class="block text-sm font-medium text-brand-800 mb-1">Site Title <span class="text-sepia-700">*</span></label>
+            <input id="field-title" type="text" required
+              class="w-full border border-brand-200 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-600 focus:border-brand-600" />
+          </div>
+          <div>
+            <label class="block text-sm font-medium text-brand-800 mb-1">Bluetooth Beacon ID <span class="text-sepia-700">*</span></label>
+            <input id="field-beacon" type="text" required placeholder="e.g. BEACON-001 or UUID"
+              class="w-full border border-brand-200 rounded-md px-3 py-2 text-sm font-mono focus:outline-none focus:ring-2 focus:ring-brand-600 focus:border-brand-600" />
+          </div>
+        </div>
+
+        <!-- Text -->
+        <div>
+          <label class="block text-sm font-medium text-brand-800 mb-1">Text Description</label>
+          <textarea id="field-text" rows="6"
+            class="w-full border border-brand-200 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-600 focus:border-brand-600"></textarea>
+        </div>
+
+        <!-- Audio -->
+        <fieldset class="border border-brand-200 rounded-md p-4">
+          <legend class="text-xs font-semibold uppercase tracking-wider text-brand-700 px-2">Audio</legend>
+          <div id="audio-preview-wrap" class="hidden mb-3">
+            <audio id="audio-preview" controls class="w-full"></audio>
+            <div id="audio-meta" class="text-xs text-brand-600 mt-1"></div>
+          </div>
+          <div class="flex flex-col sm:flex-row gap-2">
+            <input id="field-audio-url" type="text" placeholder="Paste external URL (https://...) or upload below"
+              class="flex-1 border border-brand-200 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-600 focus:border-brand-600" />
+            <button type="button" id="btn-upload-audio"
+              class="px-3 py-2 text-sm font-medium text-white bg-brand-700 rounded-md hover:bg-brand-800 whitespace-nowrap">
+              Upload Audio File
+            </button>
+            <button type="button" id="btn-clear-audio"
+              class="px-3 py-2 text-sm font-medium text-brand-700 bg-white border border-brand-200 rounded-md hover:bg-brand-50 whitespace-nowrap">
+              Clear
+            </button>
+            <input type="file" id="file-audio" accept="audio/*" class="sr-file" />
+          </div>
+        </fieldset>
+
+        <!-- Video -->
+        <fieldset class="border border-brand-200 rounded-md p-4">
+          <legend class="text-xs font-semibold uppercase tracking-wider text-brand-700 px-2">Video</legend>
+          <div id="video-preview-wrap" class="hidden mb-3">
+            <video id="video-preview" controls class="w-full rounded-md bg-black max-h-64"></video>
+            <div id="video-meta" class="text-xs text-brand-600 mt-1"></div>
+          </div>
+          <div class="flex flex-col sm:flex-row gap-2">
+            <input id="field-video-url" type="text" placeholder="Paste external URL (https://...) or upload below"
+              class="flex-1 border border-brand-200 rounded-md px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-brand-600 focus:border-brand-600" />
+            <button type="button" id="btn-upload-video"
+              class="px-3 py-2 text-sm font-medium text-white bg-brand-700 rounded-md hover:bg-brand-800 whitespace-nowrap">
+              Upload Video File
+            </button>
+            <button type="button" id="btn-clear-video"
+              class="px-3 py-2 text-sm font-medium text-brand-700 bg-white border border-brand-200 rounded-md hover:bg-brand-50 whitespace-nowrap">
+              Clear
+            </button>
+            <input type="file" id="file-video" accept="video/*" class="sr-file" />
+          </div>
+          <p class="text-xs text-brand-500 italic mt-2">Videos are uploaded to the tour server. Max upload size is controlled by the server's <span class="font-mono">MAX_UPLOAD_MB</span> setting.</p>
+        </fieldset>
+
+        <div class="flex justify-between items-center gap-2 pt-2 border-t border-brand-100">
+          <button type="button" id="btn-delete-from-modal" class="hidden px-4 py-2 text-sm font-medium text-red-700 bg-white border border-red-200 rounded-md hover:bg-red-50">
+            Delete Site
+          </button>
+          <div class="flex gap-2 ml-auto">
+            <button type="button" data-close-modal="detail-modal"
+              class="px-4 py-2 text-sm font-medium text-brand-800 bg-white border border-brand-200 rounded-md hover:bg-brand-50">Cancel</button>
+            <button type="submit"
+              class="px-4 py-2 text-sm font-medium text-white bg-brand-700 rounded-md hover:bg-brand-800 shadow-sm">Save Site</button>
+          </div>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- ============================= TOAST ============================= -->
+  <div id="toast" class="hidden fixed bottom-6 right-6 bg-brand-800 text-brand-50 text-sm px-4 py-2 rounded-md shadow-lg z-50"></div>
+
+<script>
+/* =======================================================================
+ * OLD TOWN MONTGOMERY SELF-GUIDED TOURS — admin console
+ *
+ * Talks to the Go API for all persistence. Two service layers:
+ *   DataService   — CRUD on site records via /api/sites
+ *   MediaService  — upload / resolve / remove audio+video via /api/media
+ *
+ * The server enforces a shared API key on every /api/* request via
+ * the X-API-Key header. Media playback via <audio src>/<video src>
+ * also accepts the key as ?key=... in the URL because those elements
+ * can't set custom headers.
+ * ===================================================================== */
+
+// -------------------- Config --------------------
+//
+// API_BASE:
+//   ''                     → same-origin (recommended: serve this HTML
+//                            from the Go server itself).
+//   'http://localhost:8080' → dev, talking to a Go server on another port.
+//
+// API_KEY:
+//   Must match API_SHARED_KEY in the Go server's environment. For a
+//   deployed admin console, inject this at build/deploy time OR prompt
+//   the operator once and cache it in sessionStorage (done below).
+//
+const API_BASE = '';
+const API_KEY_STORAGE = 'old_town_montgomery_api_key';
+const LOCAL_MEDIA_PREFIX = '/api/media/';
+
+function getApiKey() {
+  // Inline override wins if present (for build-time injection).
+  if (window.__API_KEY__) return window.__API_KEY__;
+  let key = sessionStorage.getItem(API_KEY_STORAGE) || '';
+  if (!key) {
+    key = (prompt('Enter API key:') || '').trim();
+    if (key) sessionStorage.setItem(API_KEY_STORAGE, key);
+  }
+  return key;
+}
+
+// -------------------- HTTP helper --------------------
+async function apiFetch(path, opts = {}) {
+  const headers = { 'X-API-Key': getApiKey(), ...(opts.headers || {}) };
+  let { body } = opts;
+
+  // Auto-JSON-encode plain objects; leave FormData / strings / etc alone.
+  if (body && !(body instanceof FormData) && typeof body !== 'string' && !(body instanceof Blob)) {
+    headers['Content-Type'] = 'application/json';
+    body = JSON.stringify(body);
+  }
+
+  const res = await fetch(API_BASE + path, { ...opts, headers, body });
+
+  if (res.status === 401) {
+    // Stale / wrong key — clear it so the next call prompts again.
+    sessionStorage.removeItem(API_KEY_STORAGE);
+    throw new Error('API key rejected. Please reload and try again.');
+  }
+  if (!res.ok) {
+    let msg = res.statusText;
+    try {
+      const j = await res.json();
+      if (j.error) msg = j.error;
+    } catch { /* body wasn't JSON */ }
+    throw new Error(`${res.status}: ${msg}`);
+  }
+  if (res.status === 204) return null;
+  const ctype = res.headers.get('Content-Type') || '';
+  return ctype.includes('application/json') ? res.json() : null;
+}
+
+// -------------------- DataService --------------------
+// Maps 1:1 to the Go API's /api/sites routes.
+const DataService = {
+  list()             { return apiFetch('/api/sites'); },
+  get(id)            { return apiFetch('/api/sites/' + encodeURIComponent(id)); },
+  create(site)       { return apiFetch('/api/sites', { method: 'POST', body: site }); },
+  update(id, patch)  { return apiFetch('/api/sites/' + encodeURIComponent(id), { method: 'PUT', body: patch }); },
+  remove(id)         { return apiFetch('/api/sites/' + encodeURIComponent(id), { method: 'DELETE' }); },
+  replaceAll(sites)  { return apiFetch('/api/sites/bulk/replace', { method: 'POST', body: { sites } }); },
+  clear()            { return apiFetch('/api/sites/bulk/clear', { method: 'POST' }); },
+};
+
+// -------------------- MediaService --------------------
+//
+// "Local" now means "stored by our Go server" — URLs begin with
+// /api/media/<id>. resolveUrl() appends ?key=... so <audio>/<video>
+// tags (which can't set headers) still authenticate.
+//
+const MediaService = {
+  // Cache of metadata keyed by URL, populated as uploads happen and
+  // on demand. Avoids a network round-trip every time the UI asks
+  // for filename/size for display.
+  _metaCache: new Map(),
+
+  async upload(file) {
+    if (!file) throw new Error('No file provided');
+    const fd = new FormData();
+    fd.append('file', file, file.name);
+    const meta = await apiFetch('/api/media', { method: 'POST', body: fd });
+    if (!meta || !meta.url) {
+      console.error('Upload response missing url field:', meta);
+      throw new Error('Upload succeeded but server returned no URL');
+    }
+    this._metaCache.set(meta.url, {
+      name: meta.filename,
+      type: meta.contentType,
+      size: meta.size,
+      uploadedAt: meta.uploadedAt,
+    });
+    return meta.url;
+  },
+
+  async resolveUrl(url) {
+    if (!url) return '';
+    if (!this.isLocal(url)) return url;
+    // Append the API key so <audio>/<video> can stream authenticated bytes.
+    const sep = url.includes('?') ? '&' : '?';
+    return API_BASE + url + sep + 'key=' + encodeURIComponent(getApiKey());
+  },
+
+  async getMeta(url) {
+    if (!this.isLocal(url)) return null;
+    if (this._metaCache.has(url)) return this._metaCache.get(url);
+    // Fall back to a bulk list lookup; cache everything we get.
+    try {
+      const all = await apiFetch('/api/media');
+      for (const m of all || []) {
+        this._metaCache.set(m.url, {
+          name: m.filename, type: m.contentType, size: m.size, uploadedAt: m.uploadedAt,
+        });
+      }
+      return this._metaCache.get(url) || null;
+    } catch {
+      return null;
+    }
+  },
+
+  isLocal(url) {
+    return typeof url === 'string' && url.startsWith(LOCAL_MEDIA_PREFIX);
+  },
+
+  async remove(url) {
+    if (!this.isLocal(url)) return;
+    const id = url.slice(LOCAL_MEDIA_PREFIX.length).split('?')[0];
+    try {
+      await apiFetch('/api/media/' + encodeURIComponent(id), { method: 'DELETE' });
+    } catch (err) {
+      // Already gone / race with another delete — not fatal.
+      console.warn('MediaService.remove:', err.message);
+    }
+    this._metaCache.delete(url);
+  },
+
+  // Bulk helpers for import/export. Media bytes now live on the server,
+  // so export returns a list of metadata stubs; import is a no-op because
+  // uploaded files keep their URLs across the round-trip.
+  async listAll() {
+    try { return await apiFetch('/api/media'); } catch { return []; }
+  },
+  async clear() {
+    const all = await this.listAll();
+    await Promise.all(all.map(m => this.remove(m.url)));
+  },
+};
+
+// -------------------- Sample Data (Old Alabama Town) --------------------
+// IDs and timestamps are assigned by the Go server on bulk replace,
+// so we only need the content fields here.
+function buildSampleData() {
+  return [
+    {
+      title: 'Lucas Tavern',
+      beaconId: 'BEACON-001',
+      text: 'Lucas Tavern is the oldest building in Montgomery and your starting point for the tour. Originally built around 1818 along the Old Federal Road, it once hosted the Marquis de Lafayette in 1825. Pick up your ticket here and begin your journey through 19th-century Alabama.',
+      audioUrl: 'https://www.w3.org/2010/05/sound/sound_90.mp3',
+      videoUrl: '',
+    },
+    {
+      title: 'Ordeman-Mitchell-Shaw House',
+      beaconId: 'BEACON-002',
+      text: 'This elegant 1850s townhouse complex showcases the urban life of a prosperous Montgomery family before the Civil War. Tour the main house, detached kitchen, slave quarters, carriage house, and period gardens to understand the full household economy of the antebellum South.',
+      audioUrl: 'https://www.w3.org/2010/05/sound/sound_90.mp3',
+      videoUrl: 'https://www.w3schools.com/html/mov_bbb.mp4',
+    },
+    {
+      title: 'The Working Block',
+      beaconId: 'BEACON-003',
+      text: 'Step into Alabama’s craft traditions. The Working Block features a blacksmith shop, carpenter shop, cotton gin, gristmill, and print shop — each preserved to show the trades that built frontier Alabama. Watch demonstrations of ironwork and wood joinery on select days.',
+      audioUrl: '',
+      videoUrl: '',
+    },
+    {
+      title: 'The Living Block',
+      beaconId: 'BEACON-004',
+      text: 'The Living Block centers on rural domestic life: a dogtrot cabin, shotgun house, one-room schoolhouse, country church, and doctor’s office. Together these buildings tell the story of everyday Alabamians in the late 1800s and early 1900s.',
+      audioUrl: '',
+      videoUrl: 'https://www.w3schools.com/html/mov_bbb.mp4',
+    },
+    {
+      title: 'Drugstore Museum',
+      beaconId: 'BEACON-005',
+      text: 'Inside this restored 1890s drugstore, you’ll find original apothecary cabinets, patent medicines, and the marble soda fountain that served generations of Montgomery customers. A time capsule of medical practice before modern pharmacy.',
+      audioUrl: 'https://www.w3.org/2010/05/sound/sound_90.mp3',
+      videoUrl: '',
+    },
+    {
+      title: 'Grange Hall',
+      beaconId: 'BEACON-006',
+      text: 'Built in 1890, this meeting hall served the Patrons of Husbandry — a fraternal order that organized rural Alabama farmers. It hosted dances, political rallies, and community gatherings, making it the social heart of the countryside.',
+      audioUrl: '',
+      videoUrl: '',
+    },
+  ];
+}
+
+// -------------------- Icons --------------------
+const Icons = {
+  text: `<svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M4 6h16M4 12h16M4 18h10"/></svg>`,
+  audio: `<svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15.536 8.464a5 5 0 010 7.072M17.95 6.05a8.5 8.5 0 010 11.9M6 10h2l4-4v12l-4-4H6a2 2 0 01-2-2v0a2 2 0 012-2z"/></svg>`,
+  video: `<svg xmlns="http://www.w3.org/2000/svg" class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor" stroke-width="2"><path stroke-linecap="round" stroke-linejoin="round" d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z"/></svg>`,
+};
+
+// -------------------- Helpers --------------------
+const $ = (id) => document.getElementById(id);
+const openModal = (id) => $(id).classList.remove('hidden');
+const closeModal = (id) => $(id).classList.add('hidden');
+
+function toast(msg) {
+  const t = $('toast');
+  t.textContent = msg;
+  t.classList.remove('hidden');
+  clearTimeout(toast._t);
+  toast._t = setTimeout(() => t.classList.add('hidden'), 2800);
+}
+
+function escapeHtml(s) {
+  return String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+}
+
+function formatBytes(bytes) {
+  if (!bytes && bytes !== 0) return '';
+  const units = ['B', 'KB', 'MB', 'GB'];
+  let i = 0;
+  while (bytes >= 1024 && i < units.length - 1) { bytes /= 1024; i++; }
+  return bytes.toFixed(bytes < 10 && i > 0 ? 1 : 0) + ' ' + units[i];
+}
+
+function estimateStorageUsage() {
+  // Data now lives server-side; the UI no longer tracks local bytes.
+  // The site-count line still shows the number of sites, which is
+  // what operators actually care about day-to-day.
+  return 0;
+}
+
+// -------------------- Table Render --------------------
+async function renderTable() {
+  const sites = await DataService.list();
+  const tbody = $('sites-tbody');
+  const empty = $('empty-state');
+  $('site-count').textContent = `${sites.length} site${sites.length === 1 ? '' : 's'}`;
+  $('storage-info').textContent = ''; // server-backed now, nothing to report
+
+  if (sites.length === 0) {
+    tbody.innerHTML = '';
+    empty.classList.remove('hidden');
+    return;
+  }
+  empty.classList.add('hidden');
+
+  tbody.innerHTML = sites.map(s => `
+    <tr class="row-clickable hover:bg-brand-50 transition-colors" data-row-id="${s.id}">
+      <td class="px-6 py-3">
+        <div class="font-medium text-brand-900">${escapeHtml(s.title)}</div>
+      </td>
+      <td class="px-6 py-3 font-mono text-xs text-brand-700">${escapeHtml(s.beaconId)}</td>
+      <td class="px-4 py-3 text-center">
+        <span class="inline-flex ${s.text ? 'text-brand-700' : 'text-brand-200'}" title="${s.text ? 'Has text' : 'No text'}">${Icons.text}</span>
+      </td>
+      <td class="px-4 py-3 text-center">
+        <span class="inline-flex ${s.audioUrl ? 'text-brand-700' : 'text-brand-200'}" title="${audioTitle(s.audioUrl)}">${Icons.audio}</span>
+      </td>
+      <td class="px-4 py-3 text-center">
+        <span class="inline-flex ${s.videoUrl ? 'text-brand-700' : 'text-brand-200'}" title="${videoTitle(s.videoUrl)}">${Icons.video}</span>
+      </td>
+      <td class="px-6 py-3 text-right">
+        <div class="inline-flex items-center gap-1" data-no-row-click>
+          <button data-action="edit" data-id="${s.id}" class="px-2.5 py-1 text-xs font-medium text-sepia-700 hover:bg-sepia-50 rounded">Edit</button>
+          <button data-action="delete" data-id="${s.id}" class="px-2.5 py-1 text-xs font-medium text-red-700 hover:bg-red-50 rounded">Delete</button>
+        </div>
+      </td>
+    </tr>
+  `).join('');
+}
+
+function audioTitle(url) {
+  if (!url) return 'No audio';
+  return MediaService.isLocal(url) ? 'Has audio (uploaded)' : 'Has audio (external URL)';
+}
+function videoTitle(url) {
+  if (!url) return 'No video';
+  return MediaService.isLocal(url) ? 'Has video (uploaded)' : 'Has video (external URL)';
+}
+
+// -------------------- Detail Modal (view + edit) --------------------
+// Pending uploads are held here until user hits Save, so Cancel leaves
+// storage untouched. Any replaced media is cleaned up on save.
+let pendingState = null;
+
+async function openDetailModal(site = null) {
+  $('detail-heading').textContent = site ? 'Site Details' : 'Add Site';
+  $('field-id').value = site?.id || '';
+  $('field-title').value = site?.title || '';
+  $('field-beacon').value = site?.beaconId || '';
+  $('field-text').value = site?.text || '';
+  $('field-audio-url').value = site?.audioUrl || '';
+  $('field-video-url').value = site?.videoUrl || '';
+
+  $('btn-delete-from-modal').classList.toggle('hidden', !site);
+
+  pendingState = {
+    originalAudioUrl: site?.audioUrl || '',
+    originalVideoUrl: site?.videoUrl || '',
+    newAudioUrl: site?.audioUrl || '',
+    newVideoUrl: site?.videoUrl || '',
+  };
+
+  await refreshAudioPreview();
+  await refreshVideoPreview();
+
+  openModal('detail-modal');
+  setTimeout(() => $('field-title').focus(), 50);
+}
+
+async function refreshAudioPreview() {
+  const wrap = $('audio-preview-wrap');
+  const el = $('audio-preview');
+  const meta = $('audio-meta');
+  const url = $('field-audio-url').value.trim();
+  pendingState.newAudioUrl = url;
+
+  if (!url) { wrap.classList.add('hidden'); el.removeAttribute('src'); meta.textContent = ''; return; }
+
+  const playable = await MediaService.resolveUrl(url);
+  el.src = playable;
+  wrap.classList.remove('hidden');
+
+  if (MediaService.isLocal(url)) {
+    const m = await MediaService.getMeta(url);
+    meta.textContent = m ? `Uploaded: ${m.name} · ${formatBytes(m.size)} · ${m.type || 'audio'}` : 'Uploaded file';
+  } else {
+    meta.textContent = 'External URL';
+  }
+}
+
+async function refreshVideoPreview() {
+  const wrap = $('video-preview-wrap');
+  const el = $('video-preview');
+  const meta = $('video-meta');
+  const url = $('field-video-url').value.trim();
+  pendingState.newVideoUrl = url;
+
+  if (!url) { wrap.classList.add('hidden'); el.removeAttribute('src'); meta.textContent = ''; return; }
+
+  const playable = await MediaService.resolveUrl(url);
+  el.src = playable;
+  wrap.classList.remove('hidden');
+
+  if (MediaService.isLocal(url)) {
+    const m = await MediaService.getMeta(url);
+    meta.textContent = m ? `Uploaded: ${m.name} · ${formatBytes(m.size)} · ${m.type || 'video'}` : 'Uploaded file';
+  } else {
+    meta.textContent = 'External URL';
+  }
+}
+
+async function handleAudioFilePicked(file) {
+  if (!file) return;
+  try {
+    toast('Uploading audio…');
+    const url = await MediaService.upload(file);
+    // If the field previously held a DIFFERENT local media ref (not saved yet), clean it up
+    const prev = $('field-audio-url').value.trim();
+    if (prev && MediaService.isLocal(prev) && prev !== pendingState.originalAudioUrl) {
+      await MediaService.remove(prev);
+    }
+    $('field-audio-url').value = url;
+    await refreshAudioPreview();
+    toast('Audio uploaded.');
+  } catch (err) {
+    console.error(err);
+    toast(err.message || 'Audio upload failed.');
+  }
+}
+
+async function handleVideoFilePicked(file) {
+  if (!file) return;
+  try {
+    toast('Uploading video…');
+    const url = await MediaService.upload(file);
+    const prev = $('field-video-url').value.trim();
+    if (prev && MediaService.isLocal(prev) && prev !== pendingState.originalVideoUrl) {
+      await MediaService.remove(prev);
+    }
+    $('field-video-url').value = url;
+    await refreshVideoPreview();
+    toast('Video uploaded.');
+  } catch (err) {
+    console.error(err);
+    toast(err.message || 'Video upload failed.');
+  }
+}
+
+async function clearAudioField() {
+  const current = $('field-audio-url').value.trim();
+  // If it's an unsaved new local upload, remove it immediately
+  if (MediaService.isLocal(current) && current !== pendingState.originalAudioUrl) {
+    await MediaService.remove(current);
+  }
+  $('field-audio-url').value = '';
+  await refreshAudioPreview();
+}
+
+async function clearVideoField() {
+  const current = $('field-video-url').value.trim();
+  if (MediaService.isLocal(current) && current !== pendingState.originalVideoUrl) {
+    await MediaService.remove(current);
+  }
+  $('field-video-url').value = '';
+  await refreshVideoPreview();
+}
+
+async function handleDetailSubmit(e) {
+  e.preventDefault();
+  const id = $('field-id').value;
+  const data = {
+    title: $('field-title').value.trim(),
+    beaconId: $('field-beacon').value.trim(),
+    text: $('field-text').value.trim(),
+    audioUrl: $('field-audio-url').value.trim(),
+    videoUrl: $('field-video-url').value.trim(),
+  };
+  if (!data.title || !data.beaconId) { toast('Title and Beacon ID are required.'); return; }
+
+  try {
+    // Clean up old local media that's being replaced
+    if (pendingState.originalAudioUrl && pendingState.originalAudioUrl !== data.audioUrl
+        && MediaService.isLocal(pendingState.originalAudioUrl)) {
+      await MediaService.remove(pendingState.originalAudioUrl);
+    }
+    if (pendingState.originalVideoUrl && pendingState.originalVideoUrl !== data.videoUrl
+        && MediaService.isLocal(pendingState.originalVideoUrl)) {
+      await MediaService.remove(pendingState.originalVideoUrl);
+    }
+
+    if (id) {
+      await DataService.update(id, data);
+      toast('Site updated.');
+    } else {
+      await DataService.create(data);
+      toast('Site added.');
+    }
+    closeModal('detail-modal');
+    pendingState = null;
+    renderTable();
+  } catch (err) {
+    console.error(err);
+    toast('Error saving site.');
+  }
+}
+
+async function handleCancelDetail() {
+  // If user uploaded new media but didn't save, clean up
+  if (pendingState) {
+    const currentAudio = $('field-audio-url').value.trim();
+    if (MediaService.isLocal(currentAudio) && currentAudio !== pendingState.originalAudioUrl) {
+      await MediaService.remove(currentAudio);
+    }
+    const currentVideo = $('field-video-url').value.trim();
+    if (MediaService.isLocal(currentVideo) && currentVideo !== pendingState.originalVideoUrl) {
+      await MediaService.remove(currentVideo);
+    }
+  }
+  pendingState = null;
+  closeModal('detail-modal');
+}
+
+// -------------------- Site Delete --------------------
+async function deleteSite(id) {
+  const site = await DataService.get(id);
+  if (!site) return;
+  if (!confirm(`Delete "${site.title}"? This removes its uploaded media too.`)) return;
+  if (MediaService.isLocal(site.audioUrl)) await MediaService.remove(site.audioUrl);
+  if (MediaService.isLocal(site.videoUrl)) await MediaService.remove(site.videoUrl);
+  await DataService.remove(id);
+  renderTable();
+  toast('Site deleted.');
+}
+
+// -------------------- Import / Export --------------------
+//
+// Export bundles sites + uploaded media so the JSON is self-contained
+// and can be re-imported in another browser without losing uploads.
+// Legacy format (bare array of sites) is still accepted on import.
+//
+async function exportJson() {
+  const sites = await DataService.list();
+  // Media metadata only — the bytes stay on the server. The export is
+  // primarily for backing up the site records; uploaded files are
+  // already safe on the server's filesystem (or Azure blob, later).
+  const media = await MediaService.listAll();
+  const bundle = {
+    exportedAt: new Date().toISOString(),
+    app: 'Old Town Montgomery Self-Guided Tours',
+    version: 2,
+    sites,
+    media,
+  };
+  const blob = new Blob([JSON.stringify(bundle, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `old-town-montgomery-tours-${new Date().toISOString().slice(0,10)}.json`;
+  document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+  toast(`Exported ${sites.length} sites + ${media.length} media refs.`);
+}
+
+async function importJsonFile(file) {
+  try {
+    const text = await file.text();
+    const parsed = JSON.parse(text);
+
+    let sites;
+    if (Array.isArray(parsed)) {
+      // Legacy: array of sites only
+      sites = parsed;
+    } else if (parsed && Array.isArray(parsed.sites)) {
+      sites = parsed.sites;
+    } else {
+      throw new Error('Unrecognized JSON structure.');
+    }
+
+    // Pass the records through; the server assigns any missing IDs
+    // and refreshes timestamps on bulk replace.
+    const normalized = sites.map(s => ({
+      id: s.id || '',
+      title: s.title || '',
+      beaconId: s.beaconId || '',
+      text: s.text || '',
+      audioUrl: s.audioUrl || '',
+      videoUrl: s.videoUrl || '',
+      createdAt: s.createdAt || '',
+      updatedAt: s.updatedAt || '',
+    }));
+
+    await DataService.replaceAll(normalized);
+    // NOTE: media bytes from old (v1) export bundles were stored as
+    // base64 inside the JSON. We no longer import them here — re-upload
+    // any referenced files through the admin UI instead.
+    renderTable();
+    toast(`Imported ${normalized.length} site${normalized.length === 1 ? '' : 's'}.`);
+  } catch (err) {
+    console.error(err);
+    toast('Import failed: ' + err.message);
+  }
+}
+
+// -------------------- Event Wiring --------------------
+function wireUp() {
+  $('btn-add').addEventListener('click', () => openDetailModal(null));
+
+  $('btn-sample').addEventListener('click', async () => {
+    if (!confirm('Load sample data? This replaces all current sites and uploaded media.')) return;
+    try {
+      // Clean up any server-stored media first
+      const existing = await DataService.list();
+      for (const s of existing) {
+        if (MediaService.isLocal(s.audioUrl)) await MediaService.remove(s.audioUrl);
+        if (MediaService.isLocal(s.videoUrl)) await MediaService.remove(s.videoUrl);
+      }
+      await DataService.replaceAll(buildSampleData());
+      await renderTable();
+      toast('Sample data loaded.');
+    } catch (err) {
+      console.error(err);
+      toast('Failed to load sample data: ' + err.message);
+    }
+  });
+
+  $('btn-clear').addEventListener('click', async () => {
+    if (!confirm('Delete all sites and uploaded media? This cannot be undone.')) return;
+    try {
+      await DataService.clear();
+      await MediaService.clear();
+      await renderTable();
+      toast('All data cleared.');
+    } catch (err) {
+      console.error(err);
+      toast('Failed to clear data: ' + err.message);
+    }
+  });
+
+  $('btn-export').addEventListener('click', exportJson);
+
+  $('btn-import').addEventListener('click', () => $('file-import').click());
+  $('file-import').addEventListener('change', (e) => {
+    const file = e.target.files[0];
+    if (file) importJsonFile(file);
+    e.target.value = '';
+  });
+
+  // Modal close buttons
+  document.querySelectorAll('[data-close-modal]').forEach(btn => {
+    btn.addEventListener('click', () => {
+      if (btn.dataset.closeModal === 'detail-modal') handleCancelDetail();
+      else closeModal(btn.dataset.closeModal);
+    });
+  });
+
+  // Click outside modal to close
+  $('detail-modal').addEventListener('click', (e) => {
+    if (e.target.id === 'detail-modal') handleCancelDetail();
+  });
+
+  // Detail form
+  $('detail-form').addEventListener('submit', handleDetailSubmit);
+
+  // URL field live preview (on change/blur)
+  $('field-audio-url').addEventListener('change', refreshAudioPreview);
+  $('field-video-url').addEventListener('change', refreshVideoPreview);
+
+  // Upload buttons
+  $('btn-upload-audio').addEventListener('click', () => $('file-audio').click());
+  $('btn-upload-video').addEventListener('click', () => $('file-video').click());
+  $('file-audio').addEventListener('change', (e) => {
+    const f = e.target.files[0]; e.target.value = '';
+    handleAudioFilePicked(f);
+  });
+  $('file-video').addEventListener('change', (e) => {
+    const f = e.target.files[0]; e.target.value = '';
+    handleVideoFilePicked(f);
+  });
+
+  // Clear buttons
+  $('btn-clear-audio').addEventListener('click', clearAudioField);
+  $('btn-clear-video').addEventListener('click', clearVideoField);
+
+  // Delete from inside modal
+  $('btn-delete-from-modal').addEventListener('click', async () => {
+    const id = $('field-id').value;
+    if (!id) return;
+    closeModal('detail-modal');
+    pendingState = null;
+    await deleteSite(id);
+  });
+
+  // Table row click + action delegation
+  $('sites-tbody').addEventListener('click', async (e) => {
+    const actionBtn = e.target.closest('button[data-action]');
+    if (actionBtn) {
+      e.stopPropagation();
+      const id = actionBtn.dataset.id;
+      if (actionBtn.dataset.action === 'edit') {
+        const site = await DataService.get(id);
+        if (site) openDetailModal(site);
+      } else if (actionBtn.dataset.action === 'delete') {
+        await deleteSite(id);
+      }
+      return;
+    }
+    // Row click (but not in the actions cell)
+    if (e.target.closest('[data-no-row-click]')) return;
+    const row = e.target.closest('tr[data-row-id]');
+    if (row) {
+      const site = await DataService.get(row.dataset.rowId);
+      if (site) openDetailModal(site);
+    }
+  });
+
+  // Escape key closes detail modal
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape' && !$('detail-modal').classList.contains('hidden')) {
+      handleCancelDetail();
+    }
+  });
+}
+
+// -------------------- Init --------------------
+async function init() {
+  wireUp();
+  try {
+    await renderTable();
+  } catch (err) {
+    console.error('Initial load failed:', err);
+    toast('Cannot reach tour server: ' + err.message);
+    // Show the empty state so the operator can retry after fixing the key.
+    $('sites-tbody').innerHTML = '';
+    $('empty-state').classList.remove('hidden');
+    $('site-count').textContent = '0 sites';
+  }
+}
+
+init();
+</script>
+
+<!--
+  The former "Members Only" block calling /.auth/me has been removed.
+  It was an Azure Static Web Apps identity probe, which only works when
+  this page is served behind Azure SWA. If you redeploy behind SWA,
+  you can re-add it; authentication to the Go API itself is via the
+  X-API-Key header (see getApiKey() above).
+-->
+
+</body>
+</html>
